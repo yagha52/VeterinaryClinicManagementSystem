@@ -1,9 +1,10 @@
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
-from rest_framework.parsers import JSONParser
-from .models import MedicalAppointment, Veterinarian
-from .serializers import MedicalAppointmentSerializer
+from rest_framework.decorators import api_view, parser_classes
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
+from .models import MedicalAppointment, Veterinarian, PetOwner
+from .serializers import MedicalAppointmentSerializer, PetOwnerSerializer
 from django.contrib.auth.hashers import check_password
+
 
 @api_view(['GET', 'POST'])
 def appointment_list(request):
@@ -26,6 +27,20 @@ def appointment_list(request):
             serializer.save()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
+
+@api_view(['GET', 'POST'])
+@parser_classes([MultiPartParser, FormParser])
+def petowner_list(request):
+    if request.method == 'GET':
+        owners = PetOwner.objects.all()
+        owner_serializer = PetOwnerSerializer(owners, many=True)
+        return JsonResponse(owner_serializer.data, safe=False)
+    elif request.method == 'POST':
+        owner_serializer = PetOwnerSerializer(data=request.data)
+        if owner_serializer.is_valid():
+            owner_serializer.save()
+            return JsonResponse(owner_serializer.data, status=201)
+        return JsonResponse(owner_serializer.errors, status=400)
 
 @api_view(['POST'])
 def vet_login(request):

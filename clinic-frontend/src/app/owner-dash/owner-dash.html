@@ -1,1 +1,66 @@
-<p>owner-dash works!</p>
+<div class="page1">
+    <div class="navbar">
+        <div class="title">Pet Owners</div>
+        <button (click)="addOwnerClick()">Add Owner</button>
+    </div>
+
+        <div class = "table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone Number</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>Carlos</td>
+                        <td>71 123 456</td>
+                        <td>carlos@gmail.com</td>
+                    </tr>
+
+                    <tr>
+                        <td>Khristo</td>
+                        <td>71 456 789</td>
+                        <td>khristo@gmail.com</td>
+                    </tr>
+
+                    <tr>
+                        <td>Zohal</td>
+                        <td>76 582 654</td>
+                        <td>zohal@gmail.com</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    <div *ngIf="showForm">
+        <div class="overlay">
+            <div class="form-box">
+                <form [formGroup]="newOwner">
+                    <h2>Add Owner</h2>
+
+                    <input type="text" required placeholder="Name.." formControlName="name">
+                    <input type="text" required placeholder="Phone number.." maxlength="13" pattern="^(\+961)?[0-9]{8}$" formControlName="phone">
+                    <input type="email" required placeholder="Email.." formControlName="email">
+
+                    <label class="file-drop">
+                    <span>📷 Choose an image</span>
+                    <small>Click to upload</small>
+
+                    <input type="file" accept="image/*" (change)="onFileSelected($event)">
+                    </label>
+
+                    <button type="button" class="save-btn" (click)="saveOwner()" [disabled]="newOwner.invalid">Save</button>
+                    <button type="button" class="cancel-btn" (click)="showForm = false">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- //notes ideas:
+// when i click on a row, i want a pop up to appear in front of me 
+//with the image of him and all the description/info
+// and a button to change the profile -->
