@@ -30,9 +30,9 @@
 
     <select class="status-filter" [(ngModel)]="statusFilter" (change)="onStatusChange()">
       <option value="">All Statuses</option>
-      <option value="S">Scheduled</option>
-      <option value="C">Completed</option>
-      <option value="X">Cancelled</option>
+      <option value="Scheduled">Scheduled</option>
+      <option value="Completed">Completed</option>
+      <option value="Cancelled">Cancelled</option>
     </select>
     
     <button class="add-btn" (click)="toggleForm()">
@@ -46,42 +46,44 @@
     <!-- The actual popup box. stopPropagation prevents clicking inside from closing it -->
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>📋 New Appointment</h3>
+        <h3>{{ isEditMode ? '✏️ Edit Appointment' : '📋 New Appointment' }}</h3>
         <button class="close-btn" (click)="toggleForm()">✕</button>
       </div>
 
-      <div class="form-group">
-        <label>Date</label>
-        <input type="date" [(ngModel)]="newAppointment.appointment_date">
-      </div>
-      <div class="form-group">
-        <label>Time</label>
-        <input type="time" [(ngModel)]="newAppointment.appointment_time">
-      </div>
-      <div class="form-group">
-        <label>Reason for Visit</label>
-        <input type="text" [(ngModel)]="newAppointment.reason" placeholder="e.g. Annual checkup">
-      </div>
-      <div class="form-group">
-        <label>Diagnosis Notes</label>
-        <textarea [(ngModel)]="newAppointment.diagnosis_notes" rows="2" placeholder="Doctor's diagnosis..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>Treatment Plan</label>
-        <textarea [(ngModel)]="newAppointment.treatment_plan" rows="2" placeholder="Prescribed treatment..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>Status</label>
-        <select [(ngModel)]="newAppointment.status">
-          <option value="Scheduled">Scheduled</option>
-          <option value="Completed">Completed</option>
-          <option value="Cancelled">Cancelled</option>
-        </select>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" [(ngModel)]="newAppointment.appointment_date">
+        </div>
+        <div class="form-group">
+          <label>Time</label>
+          <input type="time" [(ngModel)]="newAppointment.appointment_time">
+        </div>
+        <div class="form-group full-width">
+          <label>Reason for Visit</label>
+          <input type="text" [(ngModel)]="newAppointment.reason" placeholder="e.g. Annual checkup">
+        </div>
+        <div class="form-group">
+          <label>Diagnosis Notes</label>
+          <textarea [(ngModel)]="newAppointment.diagnosis_notes" rows="2" placeholder="Doctor's diagnosis..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Treatment Plan</label>
+          <textarea [(ngModel)]="newAppointment.treatment_plan" rows="2" placeholder="Prescribed treatment..."></textarea>
+        </div>
+        <div class="form-group full-width">
+          <label>Status</label>
+          <select [(ngModel)]="newAppointment.status">
+            <option value="Scheduled">Scheduled</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
       </div>
 
       <div class="modal-footer">
         <button class="cancel-btn" (click)="toggleForm()">Cancel</button>
-        <button class="submit-btn" (click)="createAppointment()">Save Appointment</button>
+        <button class="submit-btn" (click)="saveAppointment()">{{ isEditMode ? 'Update Appointment' : 'Save Appointment' }}</button>
       </div>
     </div>
   </div>
@@ -95,20 +97,31 @@
           <th>Date & Time</th>
           <th>Status</th>
           <th>Notes</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <!-- Loop over the array of data from Django! -->
-        <tr *ngFor="let appt of filteredAppointments">
+        <tr *ngFor="let appt of filteredList">
           <td>#{{ appt.id }}</td>
-          <td>{{ appt.date_time | date:'short' }}</td>
+          <td>{{ appt.appointment_date }} {{ appt.appointment_time }}</td>
           <td><span class="status-badge {{ appt.status }}">{{ appt.status }}</span></td>
-          <td>{{ appt.notes }}</td>
+          <td>{{ appt.reason }}</td>
+          <td>
+            <button class="edit-btn" (click)="editAppointment(appt)">✏️ Edit</button>
+          </td>
         </tr>
         
+        <!-- Loading State -->
+        <tr *ngIf="isLoading">
+          <td colspan="5" style="text-align: center; color: #3498db; font-weight: bold; padding: 2rem;">
+            ⏳ Fetching appointments from clinic database...
+          </td>
+        </tr>
+
         <!-- Helpful message if no appointments exist yet -->
-        <tr *ngIf="filteredAppointments.length === 0">
-          <td colspan="4" style="text-align: center; color: gray;">
+        <tr *ngIf="!isLoading && filteredList.length === 0">
+          <td colspan="5" style="text-align: center; color: gray;">
             No appointments found. Take a coffee break! ☕
           </td>
         </tr>

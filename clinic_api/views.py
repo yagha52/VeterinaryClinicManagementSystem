@@ -4,6 +4,7 @@ from rest_framework.parsers import JSONParser
 from .models import MedicalAppointment, Veterinarian
 from .serializers import MedicalAppointmentSerializer
 from django.contrib.auth.hashers import check_password
+from django.db.models import Q
 
 @api_view(['GET', 'POST'])
 def appointment_list(request):
@@ -13,7 +14,10 @@ def appointment_list(request):
         
         search_query = request.GET.get('search', None)
         if search_query:
-            appointments = appointments.filter(pet__pet_name__icontains=search_query)
+            appointments = appointments.filter(
+                Q(reason__icontains=search_query) | 
+                Q(diagnosis_notes__icontains=search_query)
+            )
 
         # 2. Serialize and return as JSON
         serializer = MedicalAppointmentSerializer(appointments, many=True)
@@ -52,3 +56,26 @@ def vet_login(request):
     except Veterinarian.DoesNotExist:
         # 4. If the email/password doesn't match, return an error
         return JsonResponse({"error": "Invalid email or password"}, status=400)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def appointment_detail(request, pk):
+    try:
+        appointment = MedicalAppointment.objects.get(pk=pk)
+    except MedicalAppointment.DoesNotExist:
+        return JsonResponse({'error': 'Appointment not found'}, status=404)
+
+    if request.method == 'GET':
+        serializer = MedicalAppointmentSerializer(appointment)
+        return JsonResponse(serializer.data)
+
+    elif request.method == 'PUT':
+        # Handle updating an existing appointment
+        serializer = MedicalAppointmentSerializer(appointment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        appointment.delete()
+        return JsonResponse({'message': 'Appointment deleted successfully'}, status=204)

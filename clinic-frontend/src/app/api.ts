@@ -25,4 +25,8 @@ export class ApiService {
   createAppointment(data: any ): Observable<any> {
     return this.http.post(`${this.baseUrl}/appointments/`, data);
   }
+
+  updateAppointment(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/appointments/${id}/`, data);
+  }
 }

@@ -15,6 +15,7 @@ export class Login implements OnInit {
   email = '';
   password = '';
   errorMessage = '';
+  isLoading = false; // Add loading state
   constructor(private api: ApiService, private router: Router) { }
   ngOnInit(): void {
     if (localStorage.getItem('vet_id')) {
@@ -26,18 +27,21 @@ export class Login implements OnInit {
       email: this.email,
       password: this.password
     };
+    
+    this.isLoading = true; // Start loading
+
     this.api.loginVet(loginData).subscribe({
       next: (response: any) => {
+        this.isLoading = false;
         console.log("Success!", response);
-        // Save the Vet ID so the computer remembers we are logged in
+        // Save the Vet ID and Name so the computer remembers we are logged in
         localStorage.setItem('vet_id', response.vet_id);
-
-        // TODO: Redirect to the Appointments Dashboard later
-        alert(`Welcome, ${response.vet_name}!`);
+        localStorage.setItem('vet_name', response.vet_name);
 
         this.router.navigate(['/appointments']);
       },
       error: (err) => {
+        this.isLoading = false; // Stop loading
         console.error(err);
         this.errorMessage = "Invalid Email or Password. Try again.";
       }
