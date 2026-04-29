@@ -1,0 +1,118 @@
+<div class="dashboard">
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <span class="navbar-brand">🐾 VetClinic</span>
+    <div class="navbar-links">
+      <a routerLink="/appointments" routerLinkActive="active">📋 Appointments</a>
+      <a routerLink="/owners" routerLinkActive="active">👤 Owners</a>
+      <a routerLink="/pets" routerLinkActive="active">🐶 Pets</a>
+    </div>
+    <span class="navbar-user">Dr. {{ vetName }}</span>
+  </nav>
+
+  <!-- Header -->
+  <header>
+    <h2>🩺 Welcome to your Clinic Dashboard, Dr. {{ vetName }}!</h2>
+    <button class="logout-btn" (click)="logout()">Log Out</button>
+  </header>
+
+  <!-- Control Panel (Search Bar) -->
+  <div class="controls">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        placeholder="Search for an appointment..."
+        (keyup.enter)="onSearch()"
+      >
+      <button (click)="onSearch()">Search</button>
+    </div>
+
+    <select class="status-filter" [(ngModel)]="statusFilter" (change)="onStatusChange()">
+      <option value="">All Statuses</option>
+      <option value="S">Scheduled</option>
+      <option value="C">Completed</option>
+      <option value="X">Cancelled</option>
+    </select>
+    
+    <button class="add-btn" (click)="toggleForm()">
+      {{ showForm ? '✕ Cancel' : '+ New Appointment' }}
+    </button>
+  </div>
+
+  <!-- Modal Overlay (the dark background behind the popup) -->
+  <div class="modal-overlay" *ngIf="showForm" (click)="toggleForm()">
+    
+    <!-- The actual popup box. stopPropagation prevents clicking inside from closing it -->
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📋 New Appointment</h3>
+        <button class="close-btn" (click)="toggleForm()">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="newAppointment.appointment_date">
+      </div>
+      <div class="form-group">
+        <label>Time</label>
+        <input type="time" [(ngModel)]="newAppointment.appointment_time">
+      </div>
+      <div class="form-group">
+        <label>Reason for Visit</label>
+        <input type="text" [(ngModel)]="newAppointment.reason" placeholder="e.g. Annual checkup">
+      </div>
+      <div class="form-group">
+        <label>Diagnosis Notes</label>
+        <textarea [(ngModel)]="newAppointment.diagnosis_notes" rows="2" placeholder="Doctor's diagnosis..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Treatment Plan</label>
+        <textarea [(ngModel)]="newAppointment.treatment_plan" rows="2" placeholder="Prescribed treatment..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select [(ngModel)]="newAppointment.status">
+          <option value="Scheduled">Scheduled</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="toggleForm()">Cancel</button>
+        <button class="submit-btn" (click)="createAppointment()">Save Appointment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Appointments Data Table -->
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Date & Time</th>
+          <th>Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Loop over the array of data from Django! -->
+        <tr *ngFor="let appt of filteredAppointments">
+          <td>#{{ appt.id }}</td>
+          <td>{{ appt.date_time | date:'short' }}</td>
+          <td><span class="status-badge {{ appt.status }}">{{ appt.status }}</span></td>
+          <td>{{ appt.notes }}</td>
+        </tr>
+        
+        <!-- Helpful message if no appointments exist yet -->
+        <tr *ngIf="filteredAppointments.length === 0">
+          <td colspan="4" style="text-align: center; color: gray;">
+            No appointments found. Take a coffee break! ☕
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
