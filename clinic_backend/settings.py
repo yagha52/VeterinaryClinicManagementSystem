@@ -11,9 +11,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -81,7 +86,7 @@ DATABASES = {
         'ENGINE': 'djongo',
         'NAME': 'veterinary_clinic_db',
         'CLIENT': {
-            'host': 'mongodb+srv://eslimyara2_db_user:CCeKJY7Yf5OcIYpB@clusterin411.5kl19ii.mongodb.net/?appName=ClusterIN411', 
+            'host': os.getenv('MONGODB_URI'), 
         }
         # 'CLIENT': {
         #     'host': 'mongodb://localhost:27017', 

@@ -1,21 +1,38 @@
-<div class="login-container">
-  <h2>Veterinarian Login</h2>
-  
-  <!-- If the python backend rejects us, show the error message -->
-  <div *ngIf="errorMessage" class="error-box">
-    {{ errorMessage }}
+<div class="split-screen">
+  <!-- Left Side: Beautiful Image/Gradient -->
+  <div class="left-pane">
+    <div class="brand">
+      <h1>🐾 VetClinic</h1>
+      <p>Next-Generation Veterinary Management</p>
+    </div>
   </div>
 
-  <div class="form-group">
-    <label>Email Address</label>
-    <input type="email" [(ngModel)]="email" placeholder="dr.smith@clinic.com">
-  </div>
+  <!-- Right Side: Login Form -->
+  <div class="right-pane">
+    <div class="login-box">
+      <h2>Welcome Back, Doctor</h2>
+      <p class="subtitle">Please enter your credentials to access your dashboard.</p>
+      
+      <!-- If the python backend rejects us, show the error message -->
+      <div *ngIf="errorMessage" class="error-box">
+        ⚠️ {{ errorMessage }}
+      </div>
 
-  <div class="form-group">
-    <label>Password</label>
-    <input type="password" [(ngModel)]="password" placeholder="••••••••">
-  </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" [(ngModel)]="email" placeholder="dr.smith@clinic.com" (keyup.enter)="submitLogin()">
+      </div>
 
-  <!-- When this button is clicked, trigger the submitLogin() function in your .ts file -->
-  <button (click)="submitLogin()">Log In</button>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" [(ngModel)]="password" placeholder="••••••••" (keyup.enter)="submitLogin()">
+      </div>
+
+      <button class="login-btn" (click)="submitLogin()" [disabled]="isLoading">
+        {{ isLoading ? 'Authenticating...' : 'Log In' }}
+      </button>
+      
+      <p class="help-text">Forgot your password? Please contact the IT administrator.</p>
+    </div>
+  </div>
 </div>
