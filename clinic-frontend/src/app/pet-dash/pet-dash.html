@@ -1,0 +1,81 @@
+<div class="page2">
+    <div class="navbar">
+        <div class="title">Pet Dashboard</div>
+        <button (click)="addPet()">Add New Pet</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Pet Name</th>
+                    <th>Species</th>
+                    <th>Breed</th>
+                    <th>Owner Name</th>
+                    <th>Owner Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr *ngIf="isLoading && pets.length === 0">
+                    <td colspan="6">Loading pets...</td>
+                </tr>
+                <tr *ngFor="let pet of pets">
+                    <td>{{ pet.pet_name }}</td>
+                    <td>{{ pet.species }}</td>
+                    <td>{{ pet.breed }}</td>
+                    <td>{{ getOwnerName(pet.owner) }}</td>
+                    <td>{{ getOwnerPhone(pet.owner) }}</td>
+                    <td class="action-cells">
+                        <button class="edit-btn" (click)="editPet(pet)">✏️</button>
+                        <button class="delete-btn" (click)="deletePet(pet.id)">🗑️</button>
+                        <a *ngIf="pet.medical_history" [href]="getHistoryUrl(pet.medical_history)" target="_blank" class="record-link">📂 Record</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add/Edit Pet Pop-up-->
+    <div *ngIf="showForm">
+        <div class="overlay">
+            <div class="form-box">
+                <form [formGroup]="newPet">
+                    <h2>{{ isEditMode ? 'Update Pet Info' : 'Add New Pet' }}</h2>
+
+                    <input type="text" required placeholder="Pet's Name.." formControlName="pet_name">
+                    <select formControlName="owner">
+                        <option [ngValue]="null" disabled>Select Owner</option>
+                        <option *ngFor="let owner of owners" [ngValue]="owner.id">
+                            {{ owner.name }}
+                        </option>
+                    </select>
+                    <input type="text" required placeholder="Enter Species.." formControlName="species">
+                    <input type="text" required placeholder="Enter Breed.." formControlName="breed">
+                    <select formControlName="gender">
+                        <option [ngValue]="null" disabled>Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                    <input type="text" required placeholder="Enter Color.." formControlName="color">
+                    <input type="number" required placeholder="Enter Weight.." formControlName="weight">
+                    <input type="date" required formControlName="birth_date">
+                    <textarea placeholder="Enter Allergies.." formControlName="allergies"></textarea>
+                    <textarea placeholder="Enter Vaccines.." formControlName="vaccinations_notes"></textarea>
+                    <label class="file-drop">
+                        <span>📷 {{ isEditMode ? 'Change Medical History' : 'Medical History File' }}</span>
+                        <small>Click to upload</small>
+
+                        <input type="file" (change)="onFileSelected($event)">
+                    </label>   
+
+                    <button type="button" class="save-btn" (click)="savePet()" [disabled]="newPet.invalid || isLoading">
+                        {{ isLoading ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
+                    </button>
+                    <button type="button" class="cancel-btn" (click)="showForm = false">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

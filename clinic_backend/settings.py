@@ -86,11 +86,8 @@ DATABASES = {
         'ENGINE': 'djongo',
         'NAME': 'veterinary_clinic_db',
         'CLIENT': {
-            'host': os.getenv('MONGODB_URI'), 
+            'host': "mongodb+srv://eslimyara2_db_user:CCeKJY7Yf5OcIYpB@clusterin411.5kl19ii.mongodb.net/?appName=ClusterIN411",
         }
-        # 'CLIENT': {
-        #     'host': 'mongodb://localhost:27017', 
-        # } # Uncomment this if your MongoDB requires a specific host port
     }
 }
 

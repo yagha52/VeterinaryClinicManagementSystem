@@ -49,4 +49,20 @@ export class ApiService {
   updateAppointment(id: number, data: any): Observable<any> {
     return this.http.put(`${this.baseUrl}/appointments/${id}/`, data);
   }
+
+  getPets(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/pet-records/`);
+  }
+
+  createPet(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/pet-records/`, data);
+  }
+
+  updatePet(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/pet-records/${id}/`, data);
+  }
+
+  deletePet(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/pet-records/${id}/`);
+  }
 }

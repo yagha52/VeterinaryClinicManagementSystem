@@ -1,8 +1,8 @@
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
-from .models import MedicalAppointment, Veterinarian, PetOwner
-from .serializers import MedicalAppointmentSerializer, PetOwnerSerializer, PetOwnerShortSerializer
+from .models import MedicalAppointment, Veterinarian, PetOwner, PetRecord
+from .serializers import MedicalAppointmentSerializer, PetOwnerSerializer, PetOwnerShortSerializer, PetRecordSerializer
 from django.contrib.auth.hashers import check_password
 from django.db.models import Q
 
@@ -118,3 +118,41 @@ def appointment_detail(request, pk):
     elif request.method == 'DELETE':
         appointment.delete()
         return JsonResponse({'message': 'Appointment deleted successfully'}, status=204)
+
+@api_view(['GET', 'POST'])
+@parser_classes([MultiPartParser, FormParser])
+def pet_list(request):
+    if request.method == 'GET':
+        pets = PetRecord.objects.all()
+        serializer = PetRecordSerializer(pets, many=True)
+        return JsonResponse(serializer.data, safe=False)
+    
+    elif request.method == 'POST':
+        serializer = PetRecordSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@parser_classes([MultiPartParser, FormParser])
+def pet_detail(request, pk):
+    try:
+        pet = PetRecord.objects.get(pk=pk)
+    except PetRecord.DoesNotExist:
+        return JsonResponse({'error': 'Pet not found'}, status=404)
+
+    if request.method == 'GET':
+        serializer = PetRecordSerializer(pet)
+        return JsonResponse(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = PetRecordSerializer(pet, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        pet.delete()
+        return JsonResponse({'message': 'Pet deleted successfully'}, status=204)

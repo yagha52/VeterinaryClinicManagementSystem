@@ -14,7 +14,11 @@ import { OnInit } from '@angular/core';
 export class OwnerDash implements OnInit {
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) { }
+  //ApiService is a service where angular communicates with django in the functions
+  //without always calling for http. that's why we call api 
 
+  //ChangeDetectorRef so Angular refresh the UI faster
+  
   showForm = false;
   showDetailed = true;
   isLoading = false;
