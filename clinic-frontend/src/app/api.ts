@@ -45,4 +45,8 @@ export class ApiService {
   getOwnerDetail(id: number): Observable<any> {
     return this.http.get(`${this.baseUrl}/petowners/${id}/`);
   }
+  
+  updateAppointment(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/appointments/${id}/`, data);
+  }
 }
