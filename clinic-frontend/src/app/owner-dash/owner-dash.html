@@ -4,58 +4,81 @@
         <button (click)="addOwnerClick()">Add Owner</button>
     </div>
 
-        <div class = "table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Phone Number</th>
-                        <th>Email</th>
-                    </tr>
-                </thead>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone Number</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
 
-                <tbody>
-                    <tr>
-                        <td>Carlos</td>
-                        <td>71 123 456</td>
-                        <td>carlos@gmail.com</td>
-                    </tr>
+            <tbody>
+                <tr *ngIf="owners.length === 0">
+                    <td colspan="3">No owners found</td>
+                </tr>
 
-                    <tr>
-                        <td>Khristo</td>
-                        <td>71 456 789</td>
-                        <td>khristo@gmail.com</td>
-                    </tr>
+                <tr *ngFor="let owner of owners" (click)="openDetails(owner)" class="clickable-row">
+                    <td>{{ owner.name }}</td>
+                    <td>{{ owner.phone }}</td>
+                    <td>{{ owner.contact_email }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-                    <tr>
-                        <td>Zohal</td>
-                        <td>76 582 654</td>
-                        <td>zohal@gmail.com</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
+    <!-- Add Owner Popup -->
     <div *ngIf="showForm">
         <div class="overlay">
             <div class="form-box">
                 <form [formGroup]="newOwner">
-                    <h2>Add Owner</h2>
+                    <h2>{{ isEditMode ? 'Update Profile' : 'Add Owner' }}</h2>
 
                     <input type="text" required placeholder="Name.." formControlName="name">
-                    <input type="text" required placeholder="Phone number.." maxlength="13" pattern="^(\+961)?[0-9]{8}$" formControlName="phone">
+                    <input type="text" required placeholder="Phone number.." maxlength="13" pattern="^(\+961)?[0-9]{8}$"
+                        formControlName="phone">
                     <input type="email" required placeholder="Email.." formControlName="email">
 
                     <label class="file-drop">
-                    <span>📷 Choose an image</span>
-                    <small>Click to upload</small>
+                        <span>📷 {{ isEditMode ? 'Change image (optional)' : 'Choose an image' }}</span>
+                        <small>Click to upload</small>
 
-                    <input type="file" accept="image/*" (change)="onFileSelected($event)">
+                        <input type="file" accept="image/*" (change)="onFileSelected($event)">
                     </label>
 
-                    <button type="button" class="save-btn" (click)="saveOwner()" [disabled]="newOwner.invalid">Save</button>
+                    <button type="button" class="save-btn" (click)="saveOwner()"
+                        [disabled]="newOwner.invalid || isLoading">
+                        {{ isLoading ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update' : 'Save') }}
+                    </button>
                     <button type="button" class="cancel-btn" (click)="showForm = false">Cancel</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Owner Details Popup -->
+    <div *ngIf="selectedOwner && showDetailed">
+        <div class="overlay">
+            <div class="details-box">
+                <div class="details-header">
+                    <div *ngIf="isLoadingDetails" class="image-loader">
+                        <div class="loader"></div>
+                    </div>
+                    <img *ngIf="!isLoadingDetails" [src]="getPhotoUrl(selectedOwner.owner_photo)" alt="Owner Photo" class="profile-img">
+                    <h2>{{ selectedOwner.name }}</h2>
+                </div>
+
+                <div class="details-info">
+                    <p><strong>Phone:</strong> {{ selectedOwner.phone }}</p>
+                    <p><strong>Email:</strong> {{ selectedOwner.contact_email }}</p>
+                </div>
+
+                <div class="details-actions">
+                    <button class="edit-btn" (click)="editOwner()">Change Profile</button>
+                    <button class="delete-btn" (click)="deleteOwner()">Delete Owner</button>
+                    <button class="close-btn" (click)="closeDetails()">Close</button>
+                </div>
             </div>
         </div>
     </div>

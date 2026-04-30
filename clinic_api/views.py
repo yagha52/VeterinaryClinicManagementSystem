@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from .models import MedicalAppointment, Veterinarian, PetOwner
-from .serializers import MedicalAppointmentSerializer, PetOwnerSerializer
+from .serializers import MedicalAppointmentSerializer, PetOwnerSerializer, PetOwnerShortSerializer
 from django.contrib.auth.hashers import check_password
 
 
@@ -30,17 +30,41 @@ def appointment_list(request):
 
 @api_view(['GET', 'POST'])
 @parser_classes([MultiPartParser, FormParser])
-def petowner_list(request):
+def petowners_list(request):
     if request.method == 'GET':
         owners = PetOwner.objects.all()
-        owner_serializer = PetOwnerSerializer(owners, many=True)
-        return JsonResponse(owner_serializer.data, safe=False)
+        owners_serializer = PetOwnerSerializer(owners, many=True)
+        return JsonResponse(owners_serializer.data, safe=False)
     elif request.method == 'POST':
-        owner_serializer = PetOwnerSerializer(data=request.data)
-        if owner_serializer.is_valid():
-            owner_serializer.save()
-            return JsonResponse(owner_serializer.data, status=201)
-        return JsonResponse(owner_serializer.errors, status=400)
+        owners_serializer = PetOwnerSerializer(data=request.data)
+        if owners_serializer.is_valid():
+            owners_serializer.save()
+            return JsonResponse(owners_serializer.data, status=201)
+        return JsonResponse(owners_serializer.errors, status=400)
+
+@api_view(['GET', 'DELETE', 'PUT'])
+@parser_classes([MultiPartParser, FormParser])
+def petowner_detail(request, pk):
+    try:
+        owner = PetOwner.objects.get(pk=pk)
+    except PetOwner.DoesNotExist:
+        return JsonResponse({"error": "Owner not found"}, status=404)
+
+    if request.method == 'GET':
+        serializer = PetOwnerSerializer(owner)
+        return JsonResponse(serializer.data)
+
+    elif request.method == 'DELETE':
+        owner.delete()
+        return JsonResponse({"message": "Owner deleted"}, status=204)
+    
+    elif request.method == 'PUT':
+        # partial=True allows updating name/phone/email without re-uploading the photo
+        serializer = PetOwnerSerializer(owner, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
 
 @api_view(['POST'])
 def vet_login(request):

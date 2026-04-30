@@ -6,6 +6,11 @@ class PetOwnerSerializer(serializers.ModelSerializer):
         model = PetOwner
         fields = '__all__'
 
+class PetOwnerShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PetOwner
+        fields = ['id', 'name', 'phone', 'contact_email']
+
 class VeterinarianSerializer(serializers.ModelSerializer):
     class Meta:
         model = Veterinarian
