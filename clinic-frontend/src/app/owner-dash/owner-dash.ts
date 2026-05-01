@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../api';
 import { OnInit } from '@angular/core';
+import { NavbarComponent } from '../navbar/navbar';
+
 @Component({
   selector: 'app-owner-dash',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, NavbarComponent],
   templateUrl: './owner-dash.html',
   styleUrl: './owner-dash.css',
   standalone: true,

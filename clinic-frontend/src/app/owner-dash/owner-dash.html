@@ -1,7 +1,9 @@
-<div class="page1">
-    <div class="navbar">
-        <div class="title">Pet Owners</div>
-        <button (click)="addOwnerClick()">Add Owner</button>
+<div class="dashboard">
+    <app-navbar></app-navbar>
+    
+    <div class="controls">
+        <h2 style="margin: 0; color: #2c3e50;">Pet Owners</h2>
+        <button class="add-btn" (click)="addOwnerClick()">Add Owner</button>
     </div>
 
     <div class="table-container">
