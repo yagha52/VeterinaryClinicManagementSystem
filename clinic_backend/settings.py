@@ -86,7 +86,7 @@ DATABASES = {
         'ENGINE': 'djongo',
         'NAME': 'veterinary_clinic_db',
         'CLIENT': {
-            'host': "mongodb+srv://eslimyara2_db_user:CCeKJY7Yf5OcIYpB@clusterin411.5kl19ii.mongodb.net/?appName=ClusterIN411",
+            'host': os.getenv('MONGODB_URI'), 
         }
     }
 }

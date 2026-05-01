@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../api';
 import { OnInit } from '@angular/core';
+import { NavbarComponent } from '../navbar/navbar';
 
 @Component({
   selector: 'app-pet-dash',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, NavbarComponent],
   templateUrl: './pet-dash.html',
   styleUrl: './pet-dash.css',
   standalone: true,

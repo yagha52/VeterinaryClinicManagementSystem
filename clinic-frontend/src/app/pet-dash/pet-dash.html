@@ -1,7 +1,9 @@
-<div class="page2">
-    <div class="navbar">
-        <div class="title">Pet Dashboard</div>
-        <button (click)="addPet()">Add New Pet</button>
+<div class="dashboard">
+    <app-navbar></app-navbar>
+
+    <div class="controls">
+        <h2 style="margin: 0; color: #2c3e50;">Pet Dashboard</h2>
+        <button class="add-btn" (click)="addPet()">Add New Pet</button>
     </div>
 
     <div class="table-container">

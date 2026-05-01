@@ -5,11 +5,12 @@ import { ApiService } from '../api';
 import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
+import { NavbarComponent } from '../navbar/navbar';
 
 @Component({
   selector: 'app-appointments',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule], // Need FormsModule for the Search Bar and Form!
+  imports: [CommonModule, FormsModule, RouterModule, NavbarComponent], // Need FormsModule for the Search Bar and Form!
   templateUrl: './appointments.html',
   styleUrls: ['./appointments.css']
 })
@@ -18,8 +19,11 @@ export class Appointments implements OnInit {
   vetName = 'Doctor';
   appointmentList: any[] = [];
   filteredList: any[] = [];
+  petList: any[] = [];
+  ownerList: any[] = [];
   searchQuery = '';
   statusFilter = ''; // Empty means show ALL statuses
+  dateFilter = ''; // Empty means show ALL time
 
   showForm = false;
   isEditMode = false;
@@ -33,7 +37,7 @@ export class Appointments implements OnInit {
     reason: '',
     treatment_plan: '',
     status: 'Scheduled',
-    pet: 1, 
+    pet: null, 
     veterinarian: Number(localStorage.getItem('vet_id'))
   };
 
@@ -45,7 +49,45 @@ export class Appointments implements OnInit {
     const firstWord = fullName.split(' ')[0];
     this.vetName = firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
     
-    this.fetchAppointments();
+    this.api.getOwners().subscribe({
+      next: (ownerData) => {
+        this.ownerList = Array.isArray(ownerData) ? ownerData : (ownerData.results || []);
+        
+        this.api.getPets().subscribe({
+          next: (petData) => {
+            this.petList = petData;
+            this.fetchAppointments();
+          },
+          error: (err) => {
+            console.error("Failed to load pets:", err);
+            this.fetchAppointments();
+          }
+        });
+      },
+      error: (err) => {
+        console.error("Failed to load owners:", err);
+        this.fetchAppointments();
+      }
+    });
+  }
+
+  getPetName(petId: number): string {
+    const pet = this.petList.find(p => p.id === petId);
+    return pet ? pet.pet_name : 'Unknown Pet';
+  }
+
+  getPetSpecies(petId: number): string {
+    const pet = this.petList.find(p => p.id === petId);
+    return pet ? pet.species : 'Unknown';
+  }
+
+  getOwnerName(petId: number): string {
+    const pet = this.petList.find(p => p.id === petId);
+    if (pet && pet.owner) {
+      const owner = this.ownerList.find(o => o.id === pet.owner);
+      return owner ? owner.name : 'Unknown Owner';
+    }
+    return 'Unknown Owner';
   }
 
   // Use our Postman service to grab the appointments from Django
@@ -54,7 +96,8 @@ export class Appointments implements OnInit {
     if (this.appointmentList.length === 0) {
       this.isLoading = true; 
     }
-    this.api.getAppointments(this.searchQuery).subscribe({
+    // Fetch ALL appointments without search query
+    this.api.getAppointments().subscribe({
       next: (data) => {
         this.appointmentList = data;
         this.applyFilter();
@@ -68,27 +111,70 @@ export class Appointments implements OnInit {
     });
   }
 
-  // Explicitly apply the filter to ensure Angular detects the change immediately
   applyFilter() {
-    // Angular sometimes initializes select elements with phantom values if not perfectly matched.
-    // We only filter if the status is exactly one of the valid Django statuses.
+    let temp = [...this.appointmentList];
+
+    // 1. Status Filter
     if (this.statusFilter === 'Scheduled' || this.statusFilter === 'Completed' || this.statusFilter === 'Cancelled') {
-      this.filteredList = this.appointmentList.filter(a => a.status === this.statusFilter);
-    } else {
-      // If it's empty, or any other phantom value, show everything.
-      // We use the spread operator [...] to force Angular to detect the array change.
-      this.filteredList = [...this.appointmentList];
+      temp = temp.filter(a => a.status === this.statusFilter);
     }
-  }
 
-  // When the Search Button is clicked
-  onSearch() {
-    this.fetchAppointments();
-  }
+    // 2. Date Filter
+    if (this.dateFilter) {
+      const today = new Date();
+      const todayStr = today.toLocaleDateString('en-CA');
+      
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 1);
+      const tomorrowStr = tomorrow.toLocaleDateString('en-CA');
+      
+      const nextWeek = new Date();
+      nextWeek.setDate(today.getDate() + 7);
+      const nextWeekStr = nextWeek.toLocaleDateString('en-CA');
 
-  // When the Status Dropdown changes
-  onStatusChange() {
-    this.applyFilter();
+      temp = temp.filter(a => {
+        if (this.dateFilter === 'Today') {
+          return a.appointment_date === todayStr;
+        } else if (this.dateFilter === 'Tomorrow') {
+          return a.appointment_date === tomorrowStr;
+        } else if (this.dateFilter === 'Next 7 Days') {
+          return a.appointment_date >= todayStr && a.appointment_date <= nextWeekStr;
+        }
+        return true;
+      });
+    }
+
+    // 3. Search Bar (Live Filter)
+    if (this.searchQuery.trim() !== '') {
+      const q = this.searchQuery.toLowerCase();
+      
+      const matchWordStart = (text: string, search: string) => {
+        if (!text) return false;
+        // Split by spaces and check if any word starts with the search query
+        return text.split(/\s+/).some(word => word.startsWith(search));
+      };
+
+      temp = temp.filter(a => {
+        const petName = this.getPetName(a.pet).toLowerCase();
+        const species = this.getPetSpecies(a.pet).toLowerCase();
+        const ownerName = this.getOwnerName(a.pet).toLowerCase();
+        const notes = (a.reason || '').toLowerCase();
+        
+        return matchWordStart(petName, q) || 
+               matchWordStart(species, q) || 
+               matchWordStart(ownerName, q) || 
+               matchWordStart(notes, q);
+      });
+    }
+
+    // 4. Chronological Sorting (Earliest First)
+    temp.sort((a, b) => {
+      const dateA = new Date(`${a.appointment_date}T${a.appointment_time || '00:00'}`).getTime();
+      const dateB = new Date(`${b.appointment_date}T${b.appointment_time || '00:00'}`).getTime();
+      return dateA - dateB;
+    });
+
+    this.filteredList = temp;
   }
 
   toggleForm(){
@@ -101,7 +187,7 @@ export class Appointments implements OnInit {
   resetForm() {
     this.isEditMode = false;
     this.currentEditId = null;
-    this.newAppointment = { appointment_date: '', appointment_time: '', diagnosis_notes: '', reason: '', treatment_plan: '', status: 'Scheduled', pet: 1, veterinarian: Number(localStorage.getItem('vet_id')) };
+    this.newAppointment = { appointment_date: '', appointment_time: '', diagnosis_notes: '', reason: '', treatment_plan: '', status: 'Scheduled', pet: null, veterinarian: Number(localStorage.getItem('vet_id')) };
   }
 
   editAppointment(appt: any) {
@@ -144,12 +230,5 @@ export class Appointments implements OnInit {
         error: (err) => console.error("Failed to create appointment:", err)
       });
     }
-  }
-
-  // The Logout Button
-  logout() {
-    localStorage.removeItem('vet_id');
-    localStorage.removeItem('vet_name');
-    this.router.navigate(['/login']);
   }
 }

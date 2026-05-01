@@ -1,0 +1,12 @@
+<nav class="navbar">
+  <span class="navbar-brand">🐾 VetClinic</span>
+  <div class="navbar-links">
+    <a routerLink="/appointments" routerLinkActive="active">📋 Appointments</a>
+    <a routerLink="/owners" routerLinkActive="active">👤 Owners</a>
+    <a routerLink="/pets" routerLinkActive="active">🐶 Pets</a>
+  </div>
+  <div class="navbar-user-section">
+    <span class="navbar-user">Dr. {{ vetName }}</span>
+    <button class="nav-logout-btn" (click)="logout()">Log Out</button>
+  </div>
+</nav>
