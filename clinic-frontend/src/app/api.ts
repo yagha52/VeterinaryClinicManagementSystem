@@ -65,4 +65,8 @@ export class ApiService {
   deletePet(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/pet-records/${id}/`);
   }
+
+  addMedicalEntry(petId: number, data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/pet-records/${petId}/entries/`, data);
+  }
 }

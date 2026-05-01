@@ -17,7 +17,10 @@
             </thead>
 
             <tbody>
-                <tr *ngIf="owners.length === 0">
+                <tr *ngIf="isLoading && owners.length === 0">
+                    <td colspan="3">Loading..</td>
+                </tr>
+                <tr *ngIf="!isLoading && owners.length === 0">
                     <td colspan="3">No owners found</td>
                 </tr>
 

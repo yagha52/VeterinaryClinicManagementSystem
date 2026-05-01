@@ -21,7 +21,10 @@
 
             <tbody>
                 <tr *ngIf="isLoading && pets.length === 0">
-                    <td colspan="6">Loading pets...</td>
+                    <td colspan="6">Loading..</td>
+                </tr>
+                <tr *ngIf="!isLoading && pets.length === 0">
+                    <td colspan="6">No pets found</td>
                 </tr>
                 <tr *ngFor="let pet of pets">
                     <td>{{ pet.pet_name }}</td>
@@ -30,9 +33,8 @@
                     <td>{{ getOwnerName(pet.owner) }}</td>
                     <td>{{ getOwnerPhone(pet.owner) }}</td>
                     <td class="action-cells">
-                        <button class="edit-btn" (click)="editPet(pet)">✏️</button>
+                        <button class="edit-btn" (click)="editPet(pet)">✏️/📂</button>
                         <button class="delete-btn" (click)="deletePet(pet.id)">🗑️</button>
-                        <a *ngIf="pet.medical_history" [href]="getHistoryUrl(pet.medical_history)" target="_blank" class="record-link">📂 Record</a>
                     </td>
                 </tr>
             </tbody>
@@ -65,18 +67,41 @@
                     <input type="date" required formControlName="birth_date">
                     <textarea placeholder="Enter Allergies.." formControlName="allergies"></textarea>
                     <textarea placeholder="Enter Vaccines.." formControlName="vaccinations_notes"></textarea>
-                    <label class="file-drop">
-                        <span>📷 {{ isEditMode ? 'Change Medical History' : 'Medical History File' }}</span>
-                        <small>Click to upload</small>
-
-                        <input type="file" (change)="onFileSelected($event)">
-                    </label>   
-
                     <button type="button" class="save-btn" (click)="savePet()" [disabled]="newPet.invalid || isLoading">
-                        {{ isLoading ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
+                        {{ isLoading ? 'Saving...' : (isEditMode ? 'Update Pet Info' : 'Save') }}
                     </button>
-                    <button type="button" class="cancel-btn" (click)="showForm = false">Cancel</button>
                 </form>
+
+                <div *ngIf="isEditMode" class="medical-records-section" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <h3>Medical History Records</h3>
+                    <div *ngIf="!selectedPet?.medical_entries?.length">No records yet.</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li *ngFor="let entry of selectedPet?.medical_entries" style="margin-bottom: 10px; padding: 10px; background: #f9f9f9; border-radius: 5px;">
+                            <strong>{{ entry.date_added | date:'short' }}</strong>
+                            <p *ngIf="entry.notes" style="margin: 5px 0;">{{ entry.notes }}</p>
+                            <a *ngIf="entry.file" [href]="getHistoryUrl(entry.file)" target="_blank" class="record-link">📂 View File</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="add-record-section" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <h4 *ngIf="isEditMode">Add New Record Entry</h4>
+                    <h4 *ngIf="!isEditMode">Initial Medical Record (Optional)</h4>
+                    <form [formGroup]="newEntry" style="display: flex; flex-direction: column; gap: 10px;">
+                        <textarea placeholder="Enter Doctor Notes.." formControlName="notes" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; min-height: 60px;"></textarea>
+                        <label class="file-drop">
+                            <span>📷 {{ selectedFileName ? selectedFileName : 'Upload File' }}</span>
+                            <small *ngIf="!selectedFileName">Click to upload</small>
+                            <small *ngIf="selectedFileName">Click to change</small>
+                            <input type="file" (change)="onFileSelected($event)">
+                        </label>
+                        <button *ngIf="isEditMode" type="button" class="add-btn" (click)="saveMedicalEntry()" [disabled]="isSavingEntry || (!newEntry.value.notes && !newEntry.value.file)">
+                            {{ isSavingEntry ? 'Saving Entry...' : 'Add Entry' }}
+                        </button>
+                    </form>
+                </div>
+                
+                <button type="button" class="cancel-btn" (click)="showForm = false" style="margin-top: 10px; width: 100%;">Close</button>
             </div>
         </div>
     </div>

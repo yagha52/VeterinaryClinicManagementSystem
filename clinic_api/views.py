@@ -1,8 +1,8 @@
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
-from .models import MedicalAppointment, Veterinarian, PetOwner, PetRecord
-from .serializers import MedicalAppointmentSerializer, PetOwnerSerializer, PetOwnerShortSerializer, PetRecordSerializer
+from .models import MedicalAppointment, Veterinarian, PetOwner, PetRecord, MedicalRecordEntry
+from .serializers import MedicalAppointmentSerializer, PetOwnerSerializer, PetOwnerShortSerializer, PetRecordSerializer, MedicalRecordEntrySerializer
 from django.contrib.auth.hashers import check_password
 from django.db.models import Q
 
@@ -156,3 +156,27 @@ def pet_detail(request, pk):
     elif request.method == 'DELETE':
         pet.delete()
         return JsonResponse({'message': 'Pet deleted successfully'}, status=204)
+
+@api_view(['GET', 'POST'])
+@parser_classes([MultiPartParser, FormParser])
+def pet_record_entries(request, pet_id):
+    try:
+        pet = PetRecord.objects.get(pk=pet_id)
+    except PetRecord.DoesNotExist:
+        return JsonResponse({'error': 'Pet not found'}, status=404)
+
+    if request.method == 'GET':
+        entries = MedicalRecordEntry.objects.filter(pet=pet).order_by('-date_added')
+        serializer = MedicalRecordEntrySerializer(entries, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
+    elif request.method == 'POST':
+        # Add pet to the data
+        data = request.data.copy() if hasattr(request.data, 'copy') else request.data
+        data['pet'] = pet.id
+        
+        serializer = MedicalRecordEntrySerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)

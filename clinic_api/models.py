@@ -25,7 +25,6 @@ class PetRecord(models.Model):
     weight = models.FloatField()
     allergies = models.TextField(blank=True)
     vaccinations_notes = models.TextField(blank=True)
-    medical_history = models.FileField(upload_to='medical_histories/')
 
     def __str__(self):
         return self.pet_name
@@ -60,3 +59,12 @@ class MedicalAppointment(models.Model):
     reason = models.TextField(blank=True, default='')
     treatment_plan = models.TextField(blank=True, default='')
     status = models.CharField(max_length=10, choices=[('Scheduled', 'S'), ('Completed', 'C'), ('Cancelled', 'X')])
+
+class MedicalRecordEntry(models.Model):
+    pet = models.ForeignKey(PetRecord, on_delete=models.CASCADE, related_name='medical_entries')
+    date_added = models.DateTimeField(auto_now_add=True)
+    file = models.FileField(upload_to='medical_histories/', blank=True, null=True)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Record for {self.pet.pet_name} on {self.date_added.strftime('%Y-%m-%d %H:%M')}"

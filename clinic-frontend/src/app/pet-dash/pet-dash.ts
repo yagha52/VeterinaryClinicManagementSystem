@@ -21,7 +21,10 @@ export class PetDash implements OnInit {
   showForm = false;
   isEditMode = false;
   selectedPetId: number | null = null;
+  selectedPet: any = null;
   isLoading = false;
+  isSavingEntry = false;
+  selectedFileName: string | null = null;
 
   newPet = new FormGroup({
     pet_name: new FormControl<string>('', [Validators.required]),
@@ -33,20 +36,64 @@ export class PetDash implements OnInit {
     weight: new FormControl<number | null>(null, [Validators.required]),
     birth_date: new FormControl<string | null>(null, [Validators.required]),
     allergies: new FormControl<string>('', []),
-    vaccinations_notes: new FormControl<string>('', []),
-    medical_history: new FormControl<File | null>(null, [])
+    vaccinations_notes: new FormControl<string>('', [])
+  });
+
+  newEntry = new FormGroup({
+    file: new FormControl<File | null>(null, []),
+    notes: new FormControl<string>('', [])
   });
 
   onFileSelected(event: any) {
     const file = event.target.files?.[0];
     if (file) {
-      this.newPet.get('medical_history')?.setValue(file);
+      this.newEntry.get('file')?.setValue(file);
+      this.selectedFileName = file.name;
+    } else {
+      this.selectedFileName = null;
     }
+  }
+
+  saveMedicalEntry() {
+    if (!this.selectedPetId || (this.newEntry.get('file')?.value === null && this.newEntry.get('notes')?.value === '')) {
+      return;
+    }
+    
+    this.isSavingEntry = true;
+    const formData = new FormData();
+    const file = this.newEntry.get('file')?.value;
+    const notes = this.newEntry.get('notes')?.value;
+    
+    if (file) formData.append('file', file);
+    if (notes) formData.append('notes', notes);
+
+    this.api.addMedicalEntry(this.selectedPetId, formData).subscribe({
+      next: (entry) => {
+        this.isSavingEntry = false;
+        alert("Medical entry added!");
+        if (this.selectedPet) {
+          if (!this.selectedPet.medical_entries) this.selectedPet.medical_entries = [];
+          this.selectedPet.medical_entries.unshift(entry); // add to top
+        }
+        this.newEntry.reset();
+        this.selectedFileName = null;
+        // Clear file input
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+        this.retrievePets(); // refresh table data
+      },
+      error: (err) => {
+        console.error("Failed to save entry", err);
+        alert("Failed to save entry.");
+        this.isSavingEntry = false;
+      }
+    });
   }
 
   addPet() {
     this.isEditMode = false;
     this.selectedPetId = null;
+    this.selectedFileName = null;
     this.newPet.reset({
       gender: 'Male',
       owner: null,
@@ -58,6 +105,9 @@ export class PetDash implements OnInit {
   editPet(pet: any) {
     this.isEditMode = true;
     this.selectedPetId = pet.id;
+    this.selectedPet = pet;
+    this.selectedFileName = null;
+    this.newEntry.reset();
     this.newPet.patchValue({
       pet_name: pet.pet_name,
       owner: pet.owner,
@@ -80,14 +130,7 @@ export class PetDash implements OnInit {
     Object.keys(this.newPet.controls).forEach(key => {
       const value = this.newPet.get(key)?.value;
       if (value !== null && value !== undefined) {
-        // Only append file if it's a new file object
-        if (key === 'medical_history') {
-          if (value instanceof File) {
-            formData.append(key, value);
-          }
-        } else {
-          formData.append(key, value);
-        }
+        formData.append(key, value);
       }
     });
 
@@ -103,9 +146,35 @@ export class PetDash implements OnInit {
       });
     } else {
       this.api.createPet(formData).subscribe({
-        next: () => {
-          alert("Pet added successfully!");
-          this.finishSave();
+        next: (createdPet) => {
+          // Handle optional initial medical record
+          const file = this.newEntry.get('file')?.value;
+          const notes = this.newEntry.get('notes')?.value;
+          
+          if (file || notes) {
+            const entryData = new FormData();
+            if (file) entryData.append('file', file);
+            if (notes) entryData.append('notes', notes);
+            
+            this.api.addMedicalEntry(createdPet.id, entryData).subscribe({
+              next: () => {
+                alert("Pet and initial medical record added successfully!");
+                this.newEntry.reset();
+                this.selectedFileName = null;
+                this.finishSave();
+              },
+              error: (err) => {
+                console.error("Failed to save initial entry", err);
+                alert("Pet added, but failed to attach initial medical record.");
+                this.newEntry.reset();
+                this.selectedFileName = null;
+                this.finishSave();
+              }
+            });
+          } else {
+            alert("Pet added successfully!");
+            this.finishSave();
+          }
         },
         error: (err) => this.handleError(err)
       });
@@ -149,15 +218,19 @@ export class PetDash implements OnInit {
   }
 
   retrieveOwner() {
+    this.isLoading = true;
     this.api.getOwners().subscribe({
       next: (data) => {
-        // Safety check to handle both array and paginated results
         this.owners = Array.isArray(data) ? data : (data.results || []);
-        console.log("OWNERS IN PET DASH:", this.owners); // DEBUG LOG
-        this.cdr.detectChanges(); // Force the dropdown to update
+        console.log("OWNERS IN PET DASH:", this.owners);
+        this.cdr.detectChanges();
+        // Fetch pets only after owners are loaded
+        this.retrievePets();
       },
       error: (err) => {
         console.error("error fetching owner", err);
+        // still try to fetch pets even if owner fetch failed
+        this.retrievePets();
       }
     });
   }
@@ -190,7 +263,6 @@ export class PetDash implements OnInit {
 
   ngOnInit(): void {
     this.retrieveOwner();
-    this.retrievePets();
   }
 
 
