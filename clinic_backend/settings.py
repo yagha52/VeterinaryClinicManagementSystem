@@ -48,8 +48,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,11 +86,8 @@ DATABASES = {
         'ENGINE': 'djongo',
         'NAME': 'veterinary_clinic_db',
         'CLIENT': {
-            'host': os.getenv('MONGODB_URI'), 
+            'host': "mongodb+srv://eslimyara2_db_user:CCeKJY7Yf5OcIYpB@clusterin411.5kl19ii.mongodb.net/?appName=ClusterIN411",
         }
-        # 'CLIENT': {
-        #     'host': 'mongodb://localhost:27017', 
-        # } # Uncomment this if your MongoDB requires a specific host port
     }
 }
 
@@ -132,3 +129,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 CORS_ALLOW_ALL_ORIGINS = True
+
+import os
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

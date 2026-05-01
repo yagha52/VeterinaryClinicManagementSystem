@@ -22,11 +22,47 @@ export class ApiService {
     return this.http.get(url);
   }
 
-  createAppointment(data: any ): Observable<any> {
+  createAppointment(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/appointments/`, data);
   }
 
+  getOwners(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/petowners/`);
+  }
+
+  createOwner(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/petowners/`, data);
+  }
+
+  deleteOwner(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/petowners/${id}/`);
+  }
+
+  updateOwner(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/petowners/${id}/`, data);
+  }
+
+  getOwnerDetail(id: number): Observable<any> {
+    return this.http.get(`${this.baseUrl}/petowners/${id}/`);
+  }
+  
   updateAppointment(id: number, data: any): Observable<any> {
     return this.http.put(`${this.baseUrl}/appointments/${id}/`, data);
+  }
+
+  getPets(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/pet-records/`);
+  }
+
+  createPet(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/pet-records/`, data);
+  }
+
+  updatePet(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/pet-records/${id}/`, data);
+  }
+
+  deletePet(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/pet-records/${id}/`);
   }
 }
