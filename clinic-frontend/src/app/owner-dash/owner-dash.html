@@ -3,7 +3,15 @@
     
     <div class="controls">
         <h2 style="margin: 0; color: #2c3e50;">Pet Owners</h2>
-        <button class="add-btn" (click)="addOwnerClick()">Add Owner</button>
+        <button class="add-btn" (click)="addOwnerClick()"><i class="fa-solid fa-plus"></i> Add Owner</button>
+    </div>
+
+    <!-- Inline feedback messages -->
+    <div *ngIf="successMessage" style="margin: 0 2rem 1rem; padding: 12px 16px; background: #d4edda; color: #155724; border-radius: 8px; font-weight: 600;">
+        <i class="fa-solid fa-circle-check"></i> {{ successMessage }}
+    </div>
+    <div *ngIf="errorMessage" style="margin: 0 2rem 1rem; padding: 12px 16px; background: #f8d7da; color: #721c24; border-radius: 8px; font-weight: 600;">
+        <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMessage }}
     </div>
 
     <div class="table-container">
@@ -17,8 +25,13 @@
             </thead>
 
             <tbody>
-                <tr *ngIf="owners.length === 0">
-                    <td colspan="3">No owners found</td>
+                <tr *ngIf="isLoading && owners.length === 0">
+                    <td colspan="3" style="text-align: center; color: #3498db; font-weight: bold; padding: 2rem;">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Fetching owners from clinic database...
+                    </td>
+                </tr>
+                <tr *ngIf="!isLoading && owners.length === 0">
+                    <td colspan="3" style="text-align: center; color: gray; padding: 2rem;">No owners found. Add your first client! <i class="fa-solid fa-users"></i></td>
                 </tr>
 
                 <tr *ngFor="let owner of owners" (click)="openDetails(owner)" class="clickable-row">
@@ -43,7 +56,7 @@
                     <input type="email" required placeholder="Email.." formControlName="email">
 
                     <label class="file-drop">
-                        <span>📷 {{ isEditMode ? 'Change image (optional)' : 'Choose an image' }}</span>
+                        <span><i class="fa-solid fa-camera"></i> {{ isEditMode ? 'Change image (optional)' : 'Choose an image' }}</span>
                         <small>Click to upload</small>
 
                         <input type="file" accept="image/*" (change)="onFileSelected($event)">

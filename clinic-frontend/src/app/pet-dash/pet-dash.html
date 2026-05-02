@@ -3,7 +3,15 @@
 
     <div class="controls">
         <h2 style="margin: 0; color: #2c3e50;">Pet Dashboard</h2>
-        <button class="add-btn" (click)="addPet()">Add New Pet</button>
+        <button class="add-btn" (click)="addPet()"><i class="fa-solid fa-plus"></i> Add New Pet</button>
+    </div>
+
+    <!-- Inline feedback messages -->
+    <div *ngIf="successMessage" style="margin: 0 2rem 1rem; padding: 12px 16px; background: #d4edda; color: #155724; border-radius: 8px; font-weight: 600;">
+        <i class="fa-solid fa-circle-check"></i> {{ successMessage }}
+    </div>
+    <div *ngIf="errorMessage" style="margin: 0 2rem 1rem; padding: 12px 16px; background: #f8d7da; color: #721c24; border-radius: 8px; font-weight: 600;">
+        <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMessage }}
     </div>
 
     <div class="table-container">
@@ -21,7 +29,12 @@
 
             <tbody>
                 <tr *ngIf="isLoading && pets.length === 0">
-                    <td colspan="6">Loading pets...</td>
+                    <td colspan="6" style="text-align: center; color: #3498db; font-weight: bold; padding: 2rem;">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Fetching pets from clinic database...
+                    </td>
+                </tr>
+                <tr *ngIf="!isLoading && pets.length === 0">
+                    <td colspan="6" style="text-align: center; color: gray; padding: 2rem;">No pets found. Add a furry friend! <i class="fa-solid fa-paw"></i></td>
                 </tr>
                 <tr *ngFor="let pet of pets">
                     <td>{{ pet.pet_name }}</td>
@@ -30,9 +43,8 @@
                     <td>{{ getOwnerName(pet.owner) }}</td>
                     <td>{{ getOwnerPhone(pet.owner) }}</td>
                     <td class="action-cells">
-                        <button class="edit-btn" (click)="editPet(pet)">✏️</button>
-                        <button class="delete-btn" (click)="deletePet(pet.id)">🗑️</button>
-                        <a *ngIf="pet.medical_history" [href]="getHistoryUrl(pet.medical_history)" target="_blank" class="record-link">📂 Record</a>
+                        <button class="edit-btn" (click)="editPet(pet)"><i class="fa-solid fa-pen"></i></button>
+                        <button class="delete-btn" (click)="deletePet(pet.id)"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             </tbody>
@@ -65,18 +77,41 @@
                     <input type="date" required formControlName="birth_date">
                     <textarea placeholder="Enter Allergies.." formControlName="allergies"></textarea>
                     <textarea placeholder="Enter Vaccines.." formControlName="vaccinations_notes"></textarea>
-                    <label class="file-drop">
-                        <span>📷 {{ isEditMode ? 'Change Medical History' : 'Medical History File' }}</span>
-                        <small>Click to upload</small>
-
-                        <input type="file" (change)="onFileSelected($event)">
-                    </label>   
-
                     <button type="button" class="save-btn" (click)="savePet()" [disabled]="newPet.invalid || isLoading">
-                        {{ isLoading ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
+                        {{ isLoading ? 'Saving...' : (isEditMode ? 'Update Pet Info' : 'Save') }}
                     </button>
-                    <button type="button" class="cancel-btn" (click)="showForm = false">Cancel</button>
                 </form>
+
+                <div *ngIf="isEditMode" class="medical-records-section" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <h3>Medical History Records</h3>
+                    <div *ngIf="!selectedPet?.medical_entries?.length">No records yet.</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li *ngFor="let entry of selectedPet?.medical_entries" style="margin-bottom: 10px; padding: 10px; background: #f9f9f9; border-radius: 5px;">
+                            <strong>{{ entry.date_added | date:'short' }}</strong>
+                            <p *ngIf="entry.notes" style="margin: 5px 0;">{{ entry.notes }}</p>
+                            <a *ngIf="entry.file" [href]="getHistoryUrl(entry.file)" target="_blank" class="record-link"><i class="fa-solid fa-folder-open"></i> View File</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="add-record-section" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <h4 *ngIf="isEditMode">Add New Record Entry</h4>
+                    <h4 *ngIf="!isEditMode">Initial Medical Record (Optional)</h4>
+                    <form [formGroup]="newEntry" style="display: flex; flex-direction: column; gap: 10px;">
+                        <textarea placeholder="Enter Doctor Notes.." formControlName="notes" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; min-height: 60px;"></textarea>
+                        <label class="file-drop">
+                            <span><i class="fa-solid fa-camera"></i> {{ selectedFileName ? selectedFileName : 'Upload File' }}</span>
+                            <small *ngIf="!selectedFileName">Click to upload</small>
+                            <small *ngIf="selectedFileName">Click to change</small>
+                            <input type="file" (change)="onFileSelected($event)">
+                        </label>
+                        <button *ngIf="isEditMode" type="button" class="add-btn" (click)="saveMedicalEntry()" [disabled]="isSavingEntry || (!newEntry.value.notes && !newEntry.value.file)">
+                            {{ isSavingEntry ? 'Saving Entry...' : 'Add Entry' }}
+                        </button>
+                    </form>
+                </div>
+                
+                <button type="button" class="cancel-btn" (click)="showForm = false" style="margin-top: 10px; width: 100%;">Close</button>
             </div>
         </div>
     </div>

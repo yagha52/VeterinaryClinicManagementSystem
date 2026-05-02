@@ -28,6 +28,8 @@ export class OwnerDash implements OnInit {
   isEditMode = false;
   selectedOwner: any = null;
   owners: any[] = [];
+  successMessage = '';
+  errorMessage = '';
 
   newOwner = new FormGroup({
     name: new FormControl<string>('', [Validators.required]),
@@ -95,14 +97,13 @@ export class OwnerDash implements OnInit {
           this.showDetailed = true;
           this.showForm = false; // Remove edit popup
           this.isLoading = false;
-          alert("Profile Updated Successfully!");
+          this.showSuccess('Profile updated successfully!');
           this.retrieveOwners(true);
           this.showDetailed = false;
         },
         error: (err) => {
-          console.error("Update failed:", err);
           this.isLoading = false;
-          alert("Update Failed!");
+          this.showError('Update failed. Please try again.');
         }
       });
     } else {
@@ -113,13 +114,12 @@ export class OwnerDash implements OnInit {
           this.showForm = false;
           this.newOwner.reset();
           this.isLoading = false;
-          alert("Owner Added Successfully!");
+          this.showSuccess('Owner added successfully!');
           this.retrieveOwners(true);
         },
         error: (err) => {
-          console.error("Error:", err);
           this.isLoading = false;
-          alert("Adding Failed!");
+          this.showError('Failed to add owner. Please check all fields.');
         }
       });
     }
@@ -129,14 +129,13 @@ export class OwnerDash implements OnInit {
     if (!silent) this.isLoading = true;
     this.api.getOwners().subscribe({
       next: (data) => {
-        console.log("Owners data received:", data);
         this.owners = Array.isArray(data) ? data : (data.results || []);
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error("Error loading owners:", err);
         this.isLoading = false;
+        this.showError('Failed to load owners from the server.');
       }
     });
   }
@@ -183,10 +182,10 @@ export class OwnerDash implements OnInit {
           // Optimistic update: remove from local list immediately
           this.owners = this.owners.filter(o => o.id !== idToDelete);
           this.cdr.detectChanges();
+          this.showSuccess('Owner deleted successfully.');
         },
         error: (err) => {
-          console.error("Delete failed:", err);
-          alert("Delete Failed!");
+          this.showError('Delete failed. Please try again.');
           this.retrieveOwners(); // Sync back if it failed
         }
       });
@@ -203,8 +202,19 @@ export class OwnerDash implements OnInit {
     return `http://127.0.0.1:8000${cleanPath}`;
   }
 
+  showSuccess(msg: string) {
+    this.successMessage = msg;
+    this.errorMessage = '';
+    setTimeout(() => this.successMessage = '', 3000);
+  }
+
+  showError(msg: string) {
+    this.errorMessage = msg;
+    this.successMessage = '';
+    setTimeout(() => this.errorMessage = '', 4000);
+  }
+
   ngOnInit(): void {
-    console.log("ngOnInit works");
     this.retrieveOwners();
   }
 

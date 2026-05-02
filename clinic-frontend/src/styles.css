@@ -493,3 +493,132 @@ tr:hover {
     border-radius: 8px;
     padding: 12px 24px;
 }
+
+/* =============================================
+   RESPONSIVE DESIGN — TABLET (max-width: 768px)
+   ============================================= */
+@media (max-width: 768px) {
+
+    /* Dashboard padding */
+    .dashboard {
+        padding: 1rem;
+    }
+
+    /* Header */
+    header h2 {
+        font-size: 1.3rem;
+    }
+
+    /* Controls: stack vertically */
+    .controls {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    .search-box {
+        flex: none;
+        width: 100%;
+    }
+
+    .search-box input {
+        max-width: 100%;
+    }
+
+    .status-filter {
+        flex: 1;
+        min-width: unset;
+    }
+
+    .add-btn {
+        width: 100%;
+        margin-left: 0;
+        text-align: center;
+    }
+
+    /* Table: enable horizontal scroll */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 550px;
+    }
+
+    th, td {
+        padding: 12px 14px;
+        font-size: 0.85rem;
+    }
+
+    /* Modal: full-screen on mobile */
+    .modal-box, .form-box, .details-box {
+        width: 95vw;
+        max-width: 95vw;
+        padding: 1.25rem;
+        max-height: 90vh;
+    }
+
+    /* Modal body: single column */
+    .modal-body {
+        grid-template-columns: 1fr;
+    }
+
+    .full-width {
+        grid-column: 1;
+    }
+
+    /* Modal footer: stack buttons */
+    .modal-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .modal-footer .cancel-btn,
+    .modal-footer .submit-btn {
+        width: 100%;
+        margin-top: 0;
+    }
+}
+
+/* =============================================
+   RESPONSIVE DESIGN — MOBILE (max-width: 480px)
+   ============================================= */
+@media (max-width: 480px) {
+
+    .dashboard {
+        padding: 0.75rem;
+    }
+
+    header h2 {
+        font-size: 1.1rem;
+    }
+
+    .controls {
+        padding: 0.75rem;
+    }
+
+    .status-filter {
+        width: 100%;
+    }
+
+    th, td {
+        padding: 10px 10px;
+        font-size: 0.8rem;
+    }
+
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+
+    .modal-box, .form-box, .details-box {
+        padding: 1rem;
+        max-height: 95vh;
+    }
+
+    .modal-header h3,
+    .form-box h2,
+    .details-box h2 {
+        font-size: 1.2rem;
+    }
+}

@@ -3,7 +3,7 @@
 
 
   <header>
-    <h2>🩺 Welcome to your Clinic Dashboard, Dr. {{ vetName }}!</h2>
+    <h2><i class="fa-solid fa-stethoscope"></i> Welcome to your Clinic Dashboard, Dr. {{ vetName }}!</h2>
   </header>
 
   <!-- Control Panel (Search Bar) -->
@@ -32,8 +32,14 @@
     </select>
     
     <button class="add-btn" (click)="toggleForm()">
-      {{ showForm ? '✕ Cancel' : '+ New Appointment' }}
+      <i class="fa-solid" [ngClass]="showForm ? 'fa-xmark' : 'fa-plus'"></i> 
+      {{ showForm ? 'Cancel' : 'New Appointment' }}
     </button>
+  </div>
+
+  <!-- Inline feedback messages -->
+  <div *ngIf="errorMessage" style="margin: 0 2rem 1rem; padding: 12px 16px; background: #f8d7da; color: #721c24; border-radius: 8px; font-weight: 600;">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMessage }}
   </div>
 
   <!-- Modal Overlay (the dark background behind the popup) -->
@@ -42,8 +48,11 @@
     <!-- The actual popup box. stopPropagation prevents clicking inside from closing it -->
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>{{ isEditMode ? '✏️ Edit Appointment' : '📋 New Appointment' }}</h3>
-        <button class="close-btn" (click)="toggleForm()">✕</button>
+        <h3>
+          <i class="fa-solid" [ngClass]="isEditMode ? 'fa-pen' : 'fa-clipboard'"></i> 
+          {{ isEditMode ? 'Edit Appointment' : 'New Appointment' }}
+        </h3>
+        <button class="close-btn" (click)="toggleForm()"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="modal-body">
@@ -116,21 +125,21 @@
           <td><span class="status-badge {{ appt.status }}">{{ appt.status }}</span></td>
           <td>{{ appt.reason }}</td>
           <td>
-            <button class="edit-btn" (click)="editAppointment(appt)">✏️ Edit</button>
+            <button class="edit-btn" (click)="editAppointment(appt)"><i class="fa-solid fa-pen"></i> Edit</button>
           </td>
         </tr>
         
         <!-- Loading State -->
         <tr *ngIf="isLoading">
           <td colspan="7" style="text-align: center; color: #3498db; font-weight: bold; padding: 2rem;">
-            ⏳ Fetching appointments from clinic database...
+            <i class="fa-solid fa-spinner fa-spin"></i> Fetching appointments from clinic database...
           </td>
         </tr>
 
         <!-- Helpful message if no appointments exist yet -->
         <tr *ngIf="!isLoading && filteredList.length === 0">
           <td colspan="7" style="text-align: center; color: gray;">
-            No appointments found. Take a coffee break! ☕
+            No appointments found. Take a coffee break! <i class="fa-solid fa-mug-hot"></i>
           </td>
         </tr>
       </tbody>
