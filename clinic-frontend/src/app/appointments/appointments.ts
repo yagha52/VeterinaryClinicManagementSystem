@@ -29,6 +29,8 @@ export class Appointments implements OnInit {
   isEditMode = false;
   isLoading = true; // Add loading state
   currentEditId: number | null = null;
+  errorMessage = '';
+  successMessage = '';
 
   newAppointment = {
     appointment_date: '',
@@ -198,11 +200,18 @@ export class Appointments implements OnInit {
   }
 
   saveAppointment() {
+    // Validate required fields before submitting
+    if (!this.newAppointment.pet || !this.newAppointment.appointment_date || !this.newAppointment.appointment_time) {
+      this.errorMessage = 'Please fill in all required fields: Pet, Date, and Time.';
+      setTimeout(() => this.errorMessage = '', 4000);
+      return;
+    }
+
     const mode = this.isEditMode;
     const id = this.currentEditId;
     const data = { ...this.newAppointment }; // copy the data
 
-    // OPTIMISTIC UI: We close the modal instantly! 
+    // OPTIMISTIC UI: We close the modal instantly!
     this.showForm = false;
     this.resetForm();
 
@@ -219,7 +228,11 @@ export class Appointments implements OnInit {
         next: () => {
           this.fetchAppointments(); // final sync just to be safe
         },
-        error: (err) => console.error("Failed to update appointment:", err)
+        error: (err) => {
+          this.errorMessage = 'Failed to update appointment. Reverting changes.';
+          setTimeout(() => this.errorMessage = '', 4000);
+          this.fetchAppointments(); // revert optimistic update
+        }
       });
     } else {
       // For create, we just send to Django and refresh when done
@@ -227,7 +240,10 @@ export class Appointments implements OnInit {
         next: () => {
           this.fetchAppointments();
         },
-        error: (err) => console.error("Failed to create appointment:", err)
+        error: (err) => {
+          this.errorMessage = 'Failed to create appointment. Please try again.';
+          setTimeout(() => this.errorMessage = '', 4000);
+        }
       });
     }
   }

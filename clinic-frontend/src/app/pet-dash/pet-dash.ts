@@ -25,6 +25,8 @@ export class PetDash implements OnInit {
   isLoading = false;
   isSavingEntry = false;
   selectedFileName: string | null = null;
+  successMessage = '';
+  errorMessage = '';
 
   newPet = new FormGroup({
     pet_name: new FormControl<string>('', [Validators.required]),
@@ -70,7 +72,7 @@ export class PetDash implements OnInit {
     this.api.addMedicalEntry(this.selectedPetId, formData).subscribe({
       next: (entry) => {
         this.isSavingEntry = false;
-        alert("Medical entry added!");
+        this.showSuccess('Medical entry added successfully!');
         if (this.selectedPet) {
           if (!this.selectedPet.medical_entries) this.selectedPet.medical_entries = [];
           this.selectedPet.medical_entries.unshift(entry); // add to top
@@ -83,8 +85,7 @@ export class PetDash implements OnInit {
         this.retrievePets(); // refresh table data
       },
       error: (err) => {
-        console.error("Failed to save entry", err);
-        alert("Failed to save entry.");
+        this.showError('Failed to save entry. Please try again.');
         this.isSavingEntry = false;
       }
     });
@@ -138,7 +139,7 @@ export class PetDash implements OnInit {
     if (this.isEditMode && this.selectedPetId) {
       this.api.updatePet(this.selectedPetId, formData).subscribe({
         next: () => {
-          alert("Pet updated successfully!");
+          this.showSuccess('Pet updated successfully!');
           this.finishSave();
           this.showForm = false;
         },
@@ -158,21 +159,20 @@ export class PetDash implements OnInit {
             
             this.api.addMedicalEntry(createdPet.id, entryData).subscribe({
               next: () => {
-                alert("Pet and initial medical record added successfully!");
+                this.showSuccess('Pet and initial medical record added successfully!');
                 this.newEntry.reset();
                 this.selectedFileName = null;
                 this.finishSave();
               },
               error: (err) => {
-                console.error("Failed to save initial entry", err);
-                alert("Pet added, but failed to attach initial medical record.");
+                this.showError('Pet added, but failed to attach initial medical record.');
                 this.newEntry.reset();
                 this.selectedFileName = null;
                 this.finishSave();
               }
             });
           } else {
-            alert("Pet added successfully!");
+            this.showSuccess('Pet added successfully!');
             this.finishSave();
           }
         },
@@ -198,8 +198,7 @@ export class PetDash implements OnInit {
   }
 
   handleError(err: any) {
-    console.error("Operation failed", err);
-    alert("Failed to save pet. Please check all fields.");
+    this.showError('Failed to save pet. Please check all fields.');
     this.isLoading = false;
   }
 
@@ -222,14 +221,13 @@ export class PetDash implements OnInit {
     this.api.getOwners().subscribe({
       next: (data) => {
         this.owners = Array.isArray(data) ? data : (data.results || []);
-        console.log("OWNERS IN PET DASH:", this.owners);
         this.cdr.detectChanges();
         // Fetch pets only after owners are loaded
         this.retrievePets();
       },
       error: (err) => {
-        console.error("error fetching owner", err);
         // still try to fetch pets even if owner fetch failed
+        this.showError('Failed to load owners.');
         this.retrievePets();
       }
     });
@@ -259,6 +257,18 @@ export class PetDash implements OnInit {
   getOwnerPhone(ownerId: number): string {
     const owner = this.owners.find(o => o.id === ownerId);
     return owner ? owner.phone : 'Unknown';
+  }
+
+  showSuccess(msg: string) {
+    this.successMessage = msg;
+    this.errorMessage = '';
+    setTimeout(() => this.successMessage = '', 3000);
+  }
+
+  showError(msg: string) {
+    this.errorMessage = msg;
+    this.successMessage = '';
+    setTimeout(() => this.errorMessage = '', 4000);
   }
 
   ngOnInit(): void {
