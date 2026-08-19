@@ -4,6 +4,7 @@ import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angula
 import { ApiService } from '../api';
 import { OnInit } from '@angular/core';
 import { NavbarComponent } from '../navbar/navbar';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-owner-dash',
@@ -199,7 +200,7 @@ export class OwnerDash implements OnInit {
 
     // Ensure there's a leading slash if not present
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    return `http://127.0.0.1:8000${cleanPath}`;
+    return `${environment.mediaUrl}${cleanPath}`;
   }
 
   showSuccess(msg: string) {

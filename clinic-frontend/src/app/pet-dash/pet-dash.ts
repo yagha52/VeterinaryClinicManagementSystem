@@ -4,6 +4,7 @@ import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angula
 import { ApiService } from '../api';
 import { OnInit } from '@angular/core';
 import { NavbarComponent } from '../navbar/navbar';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-pet-dash',
@@ -209,11 +210,11 @@ export class PetDash implements OnInit {
 
     // If it already has /media/ at the start, don't add it again!
     if (historyPath.startsWith('/media/')) {
-      return `http://127.0.0.1:8000${historyPath}`;
+      return `${environment.mediaUrl}${historyPath}`;
     }
 
     // Otherwise, add the base media path
-    return `http://127.0.0.1:8000/media/${historyPath}`;
+    return `${environment.mediaUrl}/media/${historyPath}`;
   }
 
   retrieveOwner() {
